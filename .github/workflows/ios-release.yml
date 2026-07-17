@@ -16,15 +16,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Apple now requires the iOS 26 SDK (Xcode 26+) for App Store uploads.
-      # The runner defaults to an older Xcode, so pick the newest installed
-      # Xcode 26.x.
-      - name: Select Xcode 26
+      # Apple requires the iOS 26 SDK (Xcode 26+) for App Store uploads.
+      # Prefer the newest Xcode 26.x; fall back to the newest available Xcode
+      # if the runner image hasn't been updated yet.
+      - name: Select Xcode (prefer 26, fallback to latest)
         run: |
           XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
           if [ -z "$XC" ]; then
-            echo "Xcode 26 not found. Available versions:"
-            ls -d /Applications/Xcode_*.app
+            echo "⚠️  Xcode 26 not found — falling back to newest available Xcode."
+            XC=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          fi
+          if [ -z "$XC" ]; then
+            echo "❌ No Xcode installation found!"
             exit 1
           fi
           echo "Selecting: $XC"
@@ -47,6 +50,11 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
           working-directory: ios
+
+      # Update CocoaPods specs so pod install always resolves the latest
+      # declared versions (avoids stale-lock / version-mismatch errors).
+      - name: Update CocoaPods repo
+        run: pod repo update
 
       # Generates Flutter's files (Generated.xcconfig, etc.) and runs pod
       # install in the right order. Without this the Xcode archive fails.

@@ -7,6 +7,15 @@ on:
     tags:
       - 'ios-v*'
   workflow_dispatch:   # allows running manually from the Actions tab
+    inputs:
+      lane:
+        description: 'Fastlane lane to run'
+        type: choice
+        default: beta_and_release
+        options:
+          - beta_and_release   # TestFlight + submit for App Review
+          - beta               # TestFlight only
+          - release            # App Store + submit for App Review
 
 jobs:
   build-and-deploy:
@@ -67,15 +76,18 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
 
-      - name: Build & upload to TestFlight
+      # Tag pushes always run the full flow (TestFlight + App Review);
+      # manual runs use the lane picked in the workflow_dispatch input.
+      - name: Build, upload & submit for review
         working-directory: ios
         env:
+          FASTLANE_LANE: ${{ inputs.lane || 'beta_and_release' }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
-        run: bundle exec fastlane ios beta
+        run: bundle exec fastlane ios "$FASTLANE_LANE"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4

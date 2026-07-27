@@ -1,0 +1,11 @@
+# Only the fields present under `fastlane/metadata` are sent to App Store
+# Connect. Everything else (description, keywords, support URL, marketing URL,
+# promotional text) is managed in App Store Connect directly and must NOT be
+# overwritten with blanks on every release.
+#
+# `deliver` treats a missing metadata file as "leave unchanged" only when the
+# field is listed here, so keep this list in sync with the files that exist.
+run_precheck_before_submit(true)
+precheck_default_rule_level(:warn)
+
+overwrite_screenshots(false)

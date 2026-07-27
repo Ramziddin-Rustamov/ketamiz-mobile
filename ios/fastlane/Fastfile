@@ -91,7 +91,9 @@ platform :ios do
   #   - The first version submitted manually at least once
   #
   # Metadata and screenshots are managed in App Store Connect, not in this
-  # repo, so both are skipped here — only the binary is uploaded.
+  # repo, so both are skipped here — only the binary is uploaded. Note this
+  # means release notes must already be filled in there, or Apple rejects the
+  # review submission; `beta_and_release` is the lane CI actually uses.
   desc "Build, upload to the App Store and submit for review"
   lane :release do
     api_key = asc_api_key
@@ -128,6 +130,12 @@ platform :ios do
       distribute_external: false
     )
 
+    # Apple rejects a review submission without release notes, so metadata
+    # cannot be skipped entirely. `fastlane/metadata` holds only the fields
+    # that must travel with each build (release notes, copyright); everything
+    # else — description, keywords, support URL — stays managed in App Store
+    # Connect and is left untouched by `overwrite_screenshots: false` +
+    # `skip_screenshots`.
     deliver(
       api_key: api_key,
       ipa: ipa_path,
@@ -135,7 +143,6 @@ platform :ios do
       submit_for_review: true,
       automatic_release: true,
       force: true,
-      skip_metadata: true,
       skip_screenshots: true,
       precheck_include_in_app_purchases: false,
       submission_information: {

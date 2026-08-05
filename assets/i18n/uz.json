@@ -106,6 +106,14 @@
     "verification_code": "Tasdiqlash kodi",
     "enter_reset_code": "Parolni tiklash uchun telefoningizga yuborilgan kodni kiriting"
   },
+  "update": {
+    "title": "Yangilanish mavjud",
+    "title_forced": "Yangilanish talab qilinadi",
+    "message": "Ketamiz'ning yangi versiyasi mavjud. Eng so'nggi imkoniyatlar va yaxshilanishlar uchun yangilang.",
+    "message_forced": "Ketamiz'dan foydalanishni davom ettirish uchun yangi versiya kerak. Iltimos, yangilang.",
+    "update_now": "Yangilash",
+    "later": "Keyinroq"
+  },
   "home": {
     "home": "Bosh sahifa",
     "title": "Ketamiz",

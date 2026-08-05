@@ -106,6 +106,14 @@
     "verification_code": "Verification Code",
     "enter_reset_code": "Enter the code sent to your phone to reset your password"
   },
+  "update": {
+    "title": "Update available",
+    "title_forced": "Update required",
+    "message": "A new version of Ketamiz is available. Update to get the latest features and improvements.",
+    "message_forced": "A new version is required to keep using Ketamiz. Please update to continue.",
+    "update_now": "Update",
+    "later": "Later"
+  },
   "home": {
     "home": "Home",
     "title": "Ketamiz",

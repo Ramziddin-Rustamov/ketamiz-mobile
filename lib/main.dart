@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ketamiz/src/services/push_service.dart';
+import 'package:ketamiz/src/services/version_check_service.dart';
 import 'package:ketamiz/src/theme/app_theme.dart';
 import 'package:ketamiz/src/ui/splash/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,7 @@ void main() async {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       await PushNotificationService.instance.init();
+      await VersionCheckService.instance.init();
     } catch (e) {
       debugPrint('Firebase init failed: $e');
     }
@@ -42,8 +44,41 @@ void main() async {
   runApp(LocalizedApp(delegate, const MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Check for a new version once the first frame is up (needs a Navigator).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkVersion());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-check when the user returns to the app (e.g. after ignoring earlier,
+    // or after a forced update was published while they were away).
+    if (state == AppLifecycleState.resumed) _checkVersion();
+  }
+
+  void _checkVersion() {
+    final context = PushNotificationService.instance.navigatorKey.currentContext;
+    if (context != null) {
+      VersionCheckService.instance.maybePrompt(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

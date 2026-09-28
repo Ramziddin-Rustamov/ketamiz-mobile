@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../ui/dialogs/update_dialog.dart';
+import 'feature_flags.dart';
 
 /// Result of comparing the installed app version against the values published
 /// in Firebase Remote Config.
@@ -54,6 +55,8 @@ class VersionCheckService {
         'store_url_android':
             'https://play.google.com/store/apps/details?id=uz.ketamiz.app',
         'store_url_ios': 'https://apps.apple.com/app/id0000000000',
+        // setDefaults replaces the whole map, so other flags register here.
+        ...FeatureFlags.defaults,
       });
       await _rc.fetchAndActivate();
     } catch (e) {

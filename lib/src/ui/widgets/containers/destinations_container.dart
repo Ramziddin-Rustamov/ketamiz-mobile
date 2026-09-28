@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import '../../../model/api/trip_list_model.dart';
+import '../../../services/feature_flags.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/utils.dart';
 import '../parcel_image.dart';
@@ -67,6 +68,10 @@ class DestinationsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showDetails = FeatureFlags.revealTripDetails;
+    final driverName = trip.driver.name.trim();
+    final vehiclePlate = trip.vehicle.carNumber.trim();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -277,7 +282,8 @@ class DestinationsContainer extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // Vehicle info — driver details stay hidden until the trip is booked.
+              // Vehicle info — driver name and plate only while the
+              // `reveal_trip_details` flag is on; the phone is never shown here.
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -294,6 +300,24 @@ class DestinationsContainer extends StatelessWidget {
                       fit: BoxFit.contain,
                     ),
                   ),
+                  if (showDetails && driverName.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      width: 92,
+                      child: Text(
+                        driverName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppTheme.black,
+                          fontSize: 12,
+                          fontFamily: AppTheme.fontFamily,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                   if (trip.vehicle.model.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     SizedBox(
@@ -309,6 +333,24 @@ class DestinationsContainer extends StatelessWidget {
                           fontFamily: AppTheme.fontFamily,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (showDetails && vehiclePlate.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      width: 92,
+                      child: Text(
+                        vehiclePlate,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppTheme.gray,
+                          fontSize: 10,
+                          fontFamily: AppTheme.fontFamily,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),

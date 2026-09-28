@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ketamiz/src/services/feature_flags.dart';
 import 'package:ketamiz/src/ui/dialogs/bottom_dialog.dart';
 import 'package:ketamiz/src/ui/dialogs/center_dialog.dart';
 import 'package:ketamiz/src/ui/menu/home/map_single_screen.dart';
@@ -67,8 +68,9 @@ class TripDetailsScreen extends StatefulWidget {
   final TripListModel trip;
   final bool isDriver;
 
-  /// Whether the current user has already booked this trip. Controls whether
-  /// the exact route is shown on the map or only an approximate 25 km area.
+  /// Whether the current user has already booked this trip. Together with the
+  /// `reveal_trip_details` flag it decides whether the driver name, plate and
+  /// exact route are shown (see [_TripDetailsScreenState._showDetails]).
   final bool isBooked;
 
   /// Raw bookings for this trip — only used in the driver view to list who
@@ -538,6 +540,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   /// Only active trips can still be booked or cancelled.
   bool get _isActive => _status.isEmpty || _status == 'active';
 
+  /// Driver name, plate and exact route are visible once booked, or to every
+  /// client while the `reveal_trip_details` Remote Config flag is on.
+  bool get _showDetails => widget.isBooked || FeatureFlags.revealTripDetails;
+
   Color get _statusColor {
     switch (_status) {
       case 'completed':
@@ -646,6 +652,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   Widget _buildRouteCard() {
     final driverName = widget.trip.driver.name.trim();
     final vehicleModel = widget.trip.vehicle.model;
+    final vehiclePlate = widget.trip.vehicle.carNumber.trim();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -833,15 +840,14 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      widget.isBooked
+                      _showDetails
                           ? Icons.person_rounded
                           : Icons.directions_car_rounded,
                       color: AppTheme.purple,
                       size: 24,
                     ),
                   ),
-                  // Driver name is only revealed once the trip is booked.
-                  if (widget.isBooked && driverName.isNotEmpty) ...[
+                  if (_showDetails && driverName.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     SizedBox(
                       width: 92,
@@ -874,6 +880,24 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           fontFamily: AppTheme.fontFamily,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (_showDetails && vehiclePlate.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      width: 92,
+                      child: Text(
+                        vehiclePlate,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppTheme.gray,
+                          fontSize: 10,
+                          fontFamily: AppTheme.fontFamily,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -1008,8 +1032,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           const SizedBox(height: 14),
           // Map actions:
           //  • Driver who created this trip → open in Google Maps (exact).
-          //  • Client → in-app map; exact route only after booking, otherwise
-          //    an approximate 25 km area.
+          //  • Client → in-app map; exact route when [_showDetails], otherwise
+          //    approximate 1 km areas around the endpoints.
           if (widget.isDriver || _isOwnTrip) ...[
             if (_googleMapsUrl.isNotEmpty) _openInMapsButton(),
           ] else
@@ -2005,8 +2029,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   }
 
   Widget _routeMapButton() {
-    // Exact route is revealed only after the user has booked this trip.
-    final showExact = widget.isBooked;
+    final showExact = _showDetails;
     return GestureDetector(
       onTap: () {
         Navigator.push(

@@ -332,6 +332,24 @@ class _BookedTripDetailsScreenState extends State<BookedTripDetailsScreen> {
                       ],
                     ),
                   ],
+                  if (widget.booking.vehicle.carNumber.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      width: 92,
+                      child: Text(
+                        widget.booking.vehicle.carNumber,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppTheme.gray,
+                          fontSize: 10,
+                          fontFamily: AppTheme.fontFamily,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],

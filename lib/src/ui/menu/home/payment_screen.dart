@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:ketamiz/src/model/api/book_model.dart';
 import 'package:ketamiz/src/model/passenger_model.dart';
+import 'package:ketamiz/src/services/feature_flags.dart';
 import 'package:ketamiz/src/ui/dialogs/center_dialog.dart';
 import 'package:ketamiz/src/ui/menu/main_screen.dart';
 import 'package:ketamiz/src/ui/menu/profile/top_up_screen.dart';
@@ -732,8 +733,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
           end: e,
           startText: from,
           endText: to,
-          // Not booked yet — keep the exact points hidden.
-          approximate: true,
+          // Not booked yet — exact points only while the flag reveals them.
+          approximate: !FeatureFlags.revealTripDetails,
         ),
       ),
     );

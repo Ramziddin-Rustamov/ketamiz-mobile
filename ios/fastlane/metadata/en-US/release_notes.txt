@@ -1,1 +1,3 @@
+See driver name, car plate number and the exact route before you book.
+New in-app prompt when an app update is available.
 Bug fixes and performance improvements.
